@@ -16,10 +16,11 @@ ddev restart                      # bakes OpenTofu into the web container
 ## Use
 
 ```bash
-ddev coolify-bootstrap init       # scaffold infra/ (fresh projects only)
+ddev coolify-bootstrap init                 # scaffold infra/ (fresh projects only)
 # fill in infra/secrets.auto.tfvars (from the .example) and infra/*.tfvars
-ddev coolify-bootstrap up         # provision production + staging on Coolify
-ddev coolify-bootstrap destroy    # tear a trial run down again
+ddev coolify-bootstrap up                   # provision production + staging on Coolify
+ddev coolify-bootstrap up staging           # ... or one environment at a time
+ddev coolify-bootstrap destroy [staging]    # tear the stack (or one env) down again
 ```
 
 `up` runs prereq checks → plan → **one** confirmation → apply → a post-setup
@@ -29,6 +30,15 @@ buckets, registry image) and every knob are documented in the module repo's
 [PREREQUISITES](https://github.com/vanWittlaer/terraform-coolify-shopware-stack/blob/main/PREREQUISITES.md)
 and [STATE](https://github.com/vanWittlaer/terraform-coolify-shopware-stack/blob/main/STATE.md).
 A complete reference project using this add-on: [swoofy](https://github.com/vanWittlaer/swoofy).
+
+With an environment argument (`production`|`staging`), `up` and `destroy` operate
+on that environment only (OpenTofu resource targeting under the hood — tofu's
+"targeting is in effect" note is expected). Shared resources — the Coolify
+project and the S3 CORS rule — are created by whichever per-env `up` runs first
+and are only removed by a full, no-argument `destroy`: after destroying both
+envs individually, an empty project (and the CORS rule) linger until then. The
+one-shot contract is per environment: bootstrap each env once, then the Coolify
+UI owns it.
 
 ## The one-shot contract
 

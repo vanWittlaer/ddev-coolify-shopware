@@ -16,7 +16,7 @@ health_checks() {
   ddev exec "tofu version" | grep "OpenTofu"
 
   # Command is registered and self-documents all three actions
-  ddev coolify-bootstrap --help | grep "Usage: ddev coolify-bootstrap \[init|up|destroy\]"
+  ddev coolify-bootstrap --help | grep "Usage: ddev coolify-bootstrap \[init|up|destroy\] \[production|staging\]"
 
   # init scaffolds infra/ with the pinned tcss ref substituted
   ddev coolify-bootstrap init
@@ -47,6 +47,12 @@ health_checks() {
   run ddev coolify-bootstrap up
   [ "$status" -ne 0 ]
   [[ "$output" == *"secrets.auto.tfvars is missing"* ]]
+
+  # per-env argument surface: invalid env and env-on-init are rejected
+  run ddev coolify-bootstrap up bogus
+  [ "$status" -ne 0 ]
+  run ddev coolify-bootstrap init production
+  [ "$status" -ne 0 ]
 }
 
 teardown() {
