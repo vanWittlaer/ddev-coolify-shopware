@@ -26,7 +26,8 @@ health_checks() {
   [ -f ${TESTDIR}/infra/staging.tfvars ]
   [ -f ${TESTDIR}/infra/secrets.auto.tfvars.example ]
   grep -q "ref=v0" ${TESTDIR}/infra/main.tf
-  ! grep -q "__TCSS_VERSION__" ${TESTDIR}/infra/main.tf
+  run grep -q "__TCSS_VERSION__" ${TESTDIR}/infra/main.tf
+  [ "$status" -ne 0 ]
 
   # Second init refuses (scaffold is fresh-projects-only)
   run ddev coolify-bootstrap init
