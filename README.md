@@ -1,52 +1,60 @@
 # ddev-coolify-bootstrap
 
-A **ddev add-on** that wraps OpenTofu to provision Coolify infrastructure as code. It provides the `ddev coolify-bootstrap` command for a one-shot bootstrap of production and staging Coolify stacks.
+[ddev](https://ddev.com) add-on that turns a Shopware 6 ddev project into a
+**one-shot installer** for a production + staging stack on
+[Coolify](https://coolify.io) v4 — powered by OpenTofu and the
+[`terraform-coolify-shopware-stack`](https://github.com/vanWittlaer/terraform-coolify-shopware-stack)
+module under the hood. You never run `tofu` yourself.
 
-## Installation
+## Install
 
 ```bash
 ddev add-on get vanWittlaer/ddev-coolify-bootstrap
-ddev restart  # bake OpenTofu into the web container
+ddev restart                      # bakes OpenTofu into the web container
 ```
 
-## One-Shot Bootstrap Model
-
-The production and staging stacks are provisioned **once** from [`infra/`](infra/) — a **one-shot bootstrap**; afterwards the **Coolify UI is the single source of truth**. One module ([`terraform-coolify-shopware-stack`](https://github.com/vanWittlaer/terraform-coolify-shopware-stack)) is instantiated once per environment and creates the **web** app, the **worker/scheduler** service, **MariaDB**, **cache + session Redis**, **RabbitMQ**, **Elasticsearch**, **Mailpit** (staging), the **S3** media wiring + CORS, and the optional **backup** stack.
-
-All application env — `DATABASE_URL`, `REDIS_*`, `MESSENGER_*` (RabbitMQ), `APP_SECRET`, `INSTANCE_ID`, the `S3_*` keys, … — is **computed and injected by OpenTofu**, so there is no `.env.local` to copy by hand.
-
-## Usage
-
-### Initialize (fresh projects only)
+## Use
 
 ```bash
-ddev coolify-bootstrap init   # scaffold infra/ and required tfvars templates
+ddev coolify-bootstrap init       # scaffold infra/ (fresh projects only)
+# fill in infra/secrets.auto.tfvars (from the .example) and infra/*.tfvars
+ddev coolify-bootstrap up         # provision production + staging on Coolify
+ddev coolify-bootstrap destroy    # tear a trial run down again
 ```
 
-### Bootstrap
+`up` runs prereq checks → plan → **one** confirmation → apply → a post-setup
+checklist. What gets created, the required prerequisites (Coolify server, S3
+buckets, registry image) and every knob are documented in the module repo's
+[README](https://github.com/vanWittlaer/terraform-coolify-shopware-stack#readme),
+[PREREQUISITES](https://github.com/vanWittlaer/terraform-coolify-shopware-stack/blob/main/PREREQUISITES.md)
+and [STATE](https://github.com/vanWittlaer/terraform-coolify-shopware-stack/blob/main/STATE.md).
+A complete reference project using this add-on: [swoofy](https://github.com/vanWittlaer/swoofy).
 
-```bash
-cd infra
-cp secrets.auto.tfvars.example secrets.auto.tfvars   # fill in the few secrets you own
-cd .. && ddev coolify-bootstrap up
-```
+## The one-shot contract
 
-`ddev coolify-bootstrap` wraps OpenTofu (baked into the ddev web container): prereq checks → plan → **one** confirmation → apply → post-setup checklist. It refuses to bootstrap an environment that already exists in Coolify — the setup is **strictly one-time**; maintain the live environment in the Coolify UI. Teardown of a trial run: `ddev coolify-bootstrap destroy`.
+This is a **day-0 bootstrapper, not a management tool**. After `up` succeeds,
+the **Coolify UI is the single source of truth** — maintain, tune and upgrade
+the environment there, and never re-run the bootstrap against it (the Coolify
+provider pushes env vars write-only, so a re-apply silently overwrites UI
+changes). The command enforces this: it refuses to bootstrap when the Coolify
+project already exists, and warns before any re-apply from existing local
+state. Afterwards, archive `infra/secrets.auto.tfvars` + `infra/tofu.tfstate`
+off-machine and delete them locally — they are recovery records.
 
-### Post-Bootstrap
+## What the add-on installs
 
-After bootstrap, **archive** `infra/secrets.auto.tfvars` and `infra/tofu.tfstate` off-machine (password manager / vault) — they are recovery records, not living artifacts. See [`infra/README.md`](infra/README.md) for the full runbook and the [module's FINDINGS.md](https://github.com/vanWittlaer/terraform-coolify-shopware-stack/blob/main/FINDINGS.md) for provider/Coolify quirks.
+| File | Purpose |
+|---|---|
+| `.ddev/web-build/Dockerfile.opentofu` | installs OpenTofu into the web container (official installer, deb method) |
+| `.ddev/commands/web/coolify-bootstrap` | the `init` / `up` / `destroy` command |
+| `.ddev/coolify-bootstrap/templates/` | the `infra/` scaffold (consumer config for the tcss module, pinned to a released version) |
 
-## Installed Files
+## Maintainer notes: template sync
 
-This add-on installs:
+The templates embed the tcss module version once, as `TCSS_VERSION` in
+`commands/web/coolify-bootstrap` (`__TCSS_VERSION__` in `templates/main.tf` is
+substituted at `init` time). **Release checklist when tcss releases:** bump
+`TCSS_VERSION`, re-sync `templates/` against the module repo's
+`examples/two-environment/`, run the bats tests, tag.
 
-| File                               | Purpose |
-|:-----------------------------------|:--------|
-| `.ddev/web-build/Dockerfile.opentofu` | Multi-stage build that bakes OpenTofu and dependencies into the ddev web container |
-| `.ddev/commands/web/coolify-bootstrap` | Main command wrapper (init/up/destroy subcommands) |
-| `.ddev/coolify-bootstrap/`         | Embedded Bootstrap scripts and templates (scaffolding, validation, wrappers) |
-
-## Maintainer Notes: Template Sync
-
-The embedded templates in `.ddev/coolify-bootstrap/templates/` are synchronized from the [`terraform-coolify-shopware-stack`](https://github.com/vanWittlaer/terraform-coolify-shopware-stack) module and should be re-synced whenever that module is updated. Update the version pin in `install.yaml` and re-run the sync process.
+**Maintained by [@vanWittlaer](https://github.com/vanWittlaer)**
