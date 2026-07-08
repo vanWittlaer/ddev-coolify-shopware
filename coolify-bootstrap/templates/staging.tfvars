@@ -1,3 +1,4 @@
+#ddev-generated
 # Staging environment settings (non-secret). See production.tfvars for the project-wide values.
 
 staging = {

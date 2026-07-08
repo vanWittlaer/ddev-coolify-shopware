@@ -33,6 +33,12 @@ health_checks() {
   grep -q 'backend "local"' ${TESTDIR}/infra/versions.tf
   grep -q 'path = "tofu.tfstate"' ${TESTDIR}/infra/versions.tf
 
+  # ddev's ownership marker lives on the .ddev/ templates (so upgrades update them)
+  # but must be stripped from the user's scaffolded infra/ files
+  grep -q "ddev-generated" ${TESTDIR}/.ddev/coolify-bootstrap/templates/versions.tf
+  run grep -rl "ddev-generated" ${TESTDIR}/infra
+  [ "$status" -ne 0 ]
+
   # Second init refuses (scaffold is fresh-projects-only)
   run ddev coolify-bootstrap init
   [ "$status" -ne 0 ]

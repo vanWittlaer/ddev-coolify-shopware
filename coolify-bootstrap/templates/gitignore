@@ -1,3 +1,4 @@
+#ddev-generated
 # Secrets + state never enter git (see STATE.md in the module repo for the archive model).
 secrets.auto.tfvars
 *.tfstate

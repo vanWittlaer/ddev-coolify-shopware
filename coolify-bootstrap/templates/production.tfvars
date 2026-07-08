@@ -1,3 +1,4 @@
+#ddev-generated
 # Per-environment settings (non-secret). Filled in by you after `ddev coolify-bootstrap init`.
 # project_name must stay in THIS file — the bootstrap command reads it from production.tfvars.
 
