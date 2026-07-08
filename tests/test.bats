@@ -29,6 +29,10 @@ health_checks() {
   run grep -q "__TCSS_VERSION__" ${TESTDIR}/infra/main.tf
   [ "$status" -ne 0 ]
 
+  # scaffolded state must be the archivable tofu.tfstate, never default terraform.tfstate
+  grep -q 'backend "local"' ${TESTDIR}/infra/versions.tf
+  grep -q 'path = "tofu.tfstate"' ${TESTDIR}/infra/versions.tf
+
   # Second init refuses (scaffold is fresh-projects-only)
   run ddev coolify-bootstrap init
   [ "$status" -ne 0 ]
