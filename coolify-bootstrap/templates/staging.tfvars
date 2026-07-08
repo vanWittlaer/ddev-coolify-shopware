@@ -19,10 +19,27 @@ staging = {
     s3_backup_path   = "staging"
   }
 
-  mariadb_conf = "[mysqld]\ninnodb_buffer_pool_size=500M\n"
+  # innodb_buffer_pool_size is the one host-specific knob — size it to your DB server's RAM.
+  # The rest are Shopware-recommended defaults (large GROUP_CONCAT, strict sql_mode).
+  mariadb_conf = <<-CNF
+    [mysqld]
+    innodb_buffer_pool_size=500M
+    group_concat_max_len=320000
+    sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    innodb_lock_wait_timeout=120
+  CNF
+
+  # cache may evict; session must NOT (evicting it = lost sessions). Lock lives in the DB.
   redis_conf = {
-    cache   = "appendonly no\nsave \"\"\nmaxmemory-policy volatile-lru\n"
-    session = "appendonly yes\nmaxmemory-policy allkeys-lru\n"
+    cache   = <<-CONF
+      appendonly no
+      save ""
+      maxmemory-policy volatile-lru
+    CONF
+    session = <<-CONF
+      appendonly yes
+      maxmemory-policy allkeys-lru
+    CONF
   }
 
   s3 = {
