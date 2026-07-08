@@ -1,0 +1,54 @@
+# Per-environment settings (non-secret). Filled in by you after `ddev coolify-bootstrap init`.
+# project_name must stay in THIS file — the bootstrap command reads it from production.tfvars.
+
+# --- Coolify project (owns both environments) ---
+project_name = "MyShop"
+
+# --- Ops/maintenance backup sidecar image (env-agnostic; pin a released tag for prod) ---
+backup_image     = "ghcr.io/you/shopware-ops-shell"
+backup_image_tag = "latest"
+
+# --- Extra env vars fanned out to every app process ---
+static_env = {
+  TRUSTED_PROXIES = "0.0.0.0/0" # safe ONLY if the web port is reachable only via the proxy
+}
+
+# --- Host base dir for bind mounts (var/log, staging .htpasswd). "" disables the mounts ---
+log_host_base = "/data/shopware"
+
+production = {
+  web_image         = "ghcr.io/you/app/prod"
+  web_image_tag     = "latest"
+  web_domain        = "https://shop.example.com"
+  app_env           = "prod"
+  app_debug         = "0"
+  monolog_log_level = "error"
+
+  enable_elasticsearch = true
+  enable_mailpit       = false
+  enable_backup        = true
+  backup = {
+    s3_backup_bucket = "myshop-backup"
+    s3_backup_region = "hel1"
+    s3_backup_domain = "https://hel1.your-objectstorage.com"
+    s3_backup_path   = "production"
+  }
+
+  mariadb_conf = "[mysqld]\ninnodb_buffer_pool_size=1G\n"
+  redis_conf = {
+    cache   = "appendonly no\nsave \"\"\nmaxmemory-policy volatile-lru\n"
+    session = "appendonly yes\nmaxmemory-policy allkeys-lru\n"
+  }
+
+  s3 = {
+    bucket_private = "myshop-private"
+    bucket_public  = "myshop-public"
+    region         = "hel1"
+    endpoint       = "https://hel1.your-objectstorage.com"
+    cdn_domain     = "https://hel1.your-objectstorage.com/myshop-public/production/public"
+  }
+}
+
+# --- Secrets ---
+# The per-env secrets objects (secrets_production / secrets_staging, incl. server_uuid) live in a
+# separate git-ignored `secrets.auto.tfvars` — copy `secrets.auto.tfvars.example` and fill it in.
