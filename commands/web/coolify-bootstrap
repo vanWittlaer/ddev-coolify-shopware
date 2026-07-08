@@ -175,9 +175,13 @@ else
 fi
 
 if [ "$ACTION" = "destroy" ]; then
-  [ "$SCOPED_RESOURCES" -gt 0 ] || die "no local state resources for ${ENV:+environment '$ENV' of }this stack — nothing to destroy from this machine.
+  [ "$SCOPED_RESOURCES" -gt 0 ] || die "no local state with resources${ENV:+ for environment '$ENV'} — nothing to destroy from this machine.
 A live environment without local state is managed (and deleted) via the Coolify UI."
-  echo "Destroying ${ENV:-production + staging} of the \"${PROJECT_NAME}\" stack on Coolify."
+  if [ -n "$ENV" ]; then
+    echo "Destroying environment '$ENV' of the \"${PROJECT_NAME}\" stack on Coolify."
+  else
+    echo "Destroying the \"${PROJECT_NAME}\" stack (production + staging) on Coolify."
+  fi
   if [ -n "$ENV" ]; then
     echo "Shared resources (Coolify project, S3 CORS rule) are kept — only a full destroy removes them."
   fi
