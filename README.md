@@ -57,4 +57,10 @@ substituted at `init` time). **Release checklist when tcss releases:** bump
 `TCSS_VERSION`, re-sync `templates/` against the module repo's
 `examples/two-environment/`, run the bats tests, tag.
 
+**Intentional deltas from the example — keep them when re-syncing:** the module
+source is `?ref=__TCSS_VERSION__` (not `../../`), and `templates/versions.tf`
+carries a `backend "local" { path = "tofu.tfstate" }` block the example omits —
+dropping it would scaffold an un-gitignored `terraform.tfstate` full of
+plaintext secrets (the bats suite asserts the block is present).
+
 **Maintained by [@vanWittlaer](https://github.com/vanWittlaer)**
