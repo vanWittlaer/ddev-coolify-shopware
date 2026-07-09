@@ -23,7 +23,7 @@ VAR_FILES=(-var-file=production.tfvars -var-file=staging.tfvars)
 # Scaffolding: the tcss module release the shipped templates are pinned to (the ONLY
 # place this version lives — init substitutes it into the scaffolded main.tf), and
 # where the add-on's templates land inside the web container.
-TCSS_VERSION="v0.5.1"
+TCSS_VERSION="v0.5.2"
 TEMPLATES_DIR="${TEMPLATES_DIR:-/mnt/ddev_config/coolify-bootstrap/templates}"
 
 die() { echo "ERROR: $*" >&2; exit 1; }
