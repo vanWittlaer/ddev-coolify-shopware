@@ -6,7 +6,7 @@
 project_name = "MyShop"
 
 # --- Ops/maintenance backup sidecar image (env-agnostic; pin a released tag for prod) ---
-backup_image     = "ghcr.io/you/shopware-ops-shell"
+backup_image     = "ghcr.io/vanwittlaer/shopware-ops-shell"
 backup_image_tag = "latest"
 
 # --- Extra env vars fanned out to every app process ---
@@ -40,8 +40,9 @@ production = {
   # Applied via the Coolify UI post-bootstrap, NOT by `up` — the provider can't push DB tuning
   # on this Coolify version (422 on the extended-fields update), so the module keeps these as
   # the intended config and you paste them into the UI. See the post-bootstrap checklist.
-  # innodb_buffer_pool_size is the one host-specific knob — size it to your DB server's RAM.
-  # The rest are Shopware-recommended defaults (large GROUP_CONCAT, strict sql_mode).
+  # innodb_buffer_pool_size is the one host-specific knob — size it to 1/4th to 1/2 of your DB
+  # server's RAM, allowing sufficient RAM for the other services. The rest are Shopware-recommended
+  # defaults (large GROUP_CONCAT, strict sql_mode).
   mariadb_conf = <<-CNF
     [mysqld]
     innodb_buffer_pool_size=1G
