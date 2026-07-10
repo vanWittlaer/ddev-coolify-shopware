@@ -7,7 +7,7 @@ project_name = "MyShop"
 
 # --- Ops/maintenance backup sidecar image (env-agnostic; pin a released tag for prod) ---
 backup_image     = "ghcr.io/vanwittlaer/shopware-ops-shell"
-backup_image_tag = "latest"
+backup_image_tag = "v1.1.0"
 
 # --- Extra env vars fanned out to every app process ---
 # TRUSTED_PROXIES is injected as a required invariant in main.tf (local.base_static_env), so you
