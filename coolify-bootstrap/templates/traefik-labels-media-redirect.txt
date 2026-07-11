@@ -1,0 +1,10 @@
+#ddev-generated
+traefik.http.routers.media-cdn.rule=Host(`www.example.com`) && PathPrefix(`/media`)
+traefik.http.routers.media-cdn.entrypoints=https
+traefik.http.routers.media-cdn.tls=true
+traefik.http.routers.media-cdn.priority=1000
+traefik.http.routers.media-cdn.service=<existing-app-service>
+traefik.http.routers.media-cdn.middlewares=media-cdn-redirect
+traefik.http.middlewares.media-cdn-redirect.redirectregex.regex=^https?://[^/]+/media/(.*)
+traefik.http.middlewares.media-cdn-redirect.redirectregex.replacement=https://cdn.example.com/media/${1}
+traefik.http.middlewares.media-cdn-redirect.redirectregex.permanent=true

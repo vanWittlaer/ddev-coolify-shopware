@@ -249,11 +249,23 @@ Coolify HOST as root:
     the provider's update; intended values live in the mariadb_conf/redis_conf
     tfvars).
 
- 4. Elasticsearch (after the first successful deploy, per env with ES enabled):
+ 4. Production web server: if you use multiple domains, e.g. with and w/o www prefix,
+    you need to configure the domain setting for the web server manually. Make
+    sure all Domains are appended with :8000, and configure the "Direction" to
+    your needs.
+
+ 5. Production web server: if you need to redirect permanent legacy media links
+    (i.e. https://www.example.com/media/... to new S3_CDN_DOMAIN), add traefik labels
+    manually to your web server. An example can be found in
+      infra/traefik-labels-media-redirect.txt
+    Remember to replace <existing-app-service> with your traefik service id
+    ('https-0-...'). This will redirect all hardcoded or relative media URLs to the CDN.
+
+ 6. Elasticsearch (after the first successful deploy, per env with ES enabled):
       bin/console es:index && bin/console es:admin:index
     then redeploy the workers so they pick up the ES env.
 
- 5. First-deploy quirk: if the storefront loads unstyled right after the very
+ 7. First-deploy quirk: if the storefront loads unstyled right after the very
     FIRST deploy (403 on theme/<hash>/css/all.css), a page was cached
     mid-install pointing at a theme path that never got files. It self-heals
     once the cache-invalidation scheduled task runs (workers up, <= 5 min) —
