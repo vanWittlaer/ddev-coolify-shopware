@@ -16,7 +16,7 @@ staging = {
   backup = {
     s3_backup_bucket = "myshop-backup"
     s3_backup_region = "hel1"
-    s3_backup_domain = "https://hel1.your-objectstorage.com"
+    s3_backup_domain = "https://hel1.your-objectstorage.com" # region endpoint, no bucket name
     s3_backup_path   = "staging"
   }
 

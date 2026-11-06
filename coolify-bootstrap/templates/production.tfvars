@@ -7,7 +7,7 @@ project_name = "MyShop"
 
 # --- Ops/maintenance backup sidecar image (env-agnostic; pin a released tag for prod) ---
 backup_image     = "ghcr.io/vanwittlaer/shopware-ops-shell"
-backup_image_tag = "v1.1.1"
+backup_image_tag = "v1.1.4"
 
 # --- Extra env vars fanned out to every app process ---
 # TRUSTED_PROXIES is injected as a required invariant in main.tf (local.base_static_env), so you
@@ -33,7 +33,7 @@ production = {
   backup = {
     s3_backup_bucket = "myshop-backup"
     s3_backup_region = "hel1"
-    s3_backup_domain = "https://hel1.your-objectstorage.com"
+    s3_backup_domain = "https://hel1.your-objectstorage.com" # region endpoint, no bucket name
     s3_backup_path   = "production"
   }
 
